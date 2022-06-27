@@ -3,9 +3,9 @@
 ##################################################################################
 
 provider "aws" {
-  access_key = "ACCESS_KEY"
-  secret_key = "SECRET_KEY"
-  region     = "us-east-1"
+  access_key = ""
+  secret_key = ""
+  region     = "eu-east-1"
 }
 
 ##################################################################################
@@ -21,10 +21,11 @@ data "aws_ssm_parameter" "ami" {
 ##################################################################################
 
 # NETWORKING #
-resource "aws_vpc" "vpc" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
 
+# <resource_type>.<label><label_name>
+resource "aws_vpc" "vpc" {
+  cidr_block           = "10.0.0.0/16" # argument
+  enable_dns_hostnames = true          # argument
 }
 
 resource "aws_internet_gateway" "igw" {
@@ -42,6 +43,7 @@ resource "aws_subnet" "subnet1" {
 resource "aws_route_table" "rtb" {
   vpc_id = aws_vpc.vpc.id
 
+  # Block, set = nested block
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
@@ -64,7 +66,7 @@ resource "aws_security_group" "nginx-sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] # 171.20.64.8
   }
 
   # outbound internet access
@@ -73,8 +75,11 @@ resource "aws_security_group" "nginx-sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+
   }
 }
+
+
 
 # INSTANCES #
 resource "aws_instance" "nginx1" {
@@ -90,6 +95,4 @@ sudo service nginx start
 sudo rm /usr/share/nginx/html/index.html
 echo '<html><head><title>Taco Team Server</title></head><body style=\"background-color:#1F778D\"><p style=\"text-align: center;\"><span style=\"color:#FFFFFF;\"><span style=\"font-size:28px;\">You did it! Have a &#127790;</span></span></p></body></html>' | sudo tee /usr/share/nginx/html/index.html
 EOF
-
 }
-
